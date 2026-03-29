@@ -1,8 +1,8 @@
 {
-  "Author": "your name here",
-  "Name": "Sample Plugin",
+  "Author": "Vali",
+  "Name": "AutoSort",
   "Punchline": "A short one-liner that shows up in /xlplugins.",
-  "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
+  "Description": "Automatically sorts the inventory when opened.",
   "ApplicableVersion": "any",
   "Tags": [
     "sample",

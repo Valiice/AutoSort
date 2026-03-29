@@ -1,0 +1,14 @@
+{
+  "Author": "Vali",
+  "Name": "AutoSort",
+  "InternalName": "AutoSort",
+  "Description": "Automatically sorts the inventory when opened.",
+  "Punchline": "Keeps your inventory tidy automatically.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "inventory",
+    "sort",
+    "utility"
+  ],
+  "DalamudApiLevel": 14
+}
