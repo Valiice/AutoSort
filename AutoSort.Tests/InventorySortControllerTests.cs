@@ -35,4 +35,28 @@ public class InventorySortControllerTests
         ctrl.Tick(2);  // still open — must not sort again
         Assert.Single(_executor.Calls);
     }
+
+    [Fact]
+    public void DoesNotSortAgain_WithinCooldown()
+    {
+        _config.SortCooldownMs = 2000;
+        var ctrl = MakeController();
+        _state.InventoryOpen = false; ctrl.Tick(0);
+        _state.InventoryOpen = true;  ctrl.Tick(1);    // first open — sorts (1 - long.MinValue/2 >> 2000)
+        _state.InventoryOpen = false; ctrl.Tick(2);
+        _state.InventoryOpen = true;  ctrl.Tick(500);  // re-open — 500 - 1 = 499, not > 2000
+        Assert.Single(_executor.Calls);
+    }
+
+    [Fact]
+    public void SortsAgain_AfterCooldownExpires()
+    {
+        _config.SortCooldownMs = 2000;
+        var ctrl = MakeController();
+        _state.InventoryOpen = false; ctrl.Tick(0);
+        _state.InventoryOpen = true;  ctrl.Tick(1);     // first sort at t=1
+        _state.InventoryOpen = false; ctrl.Tick(2);
+        _state.InventoryOpen = true;  ctrl.Tick(3000);  // 3000 - 1 = 2999 > 2000 — sorts again
+        Assert.Equal(2, _executor.Calls.Count);
+    }
 }
