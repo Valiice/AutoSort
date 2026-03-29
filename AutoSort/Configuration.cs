@@ -23,6 +23,9 @@ public sealed class Configuration : IPluginConfiguration, ISortConfiguration
         "/itemsort execute inventory"
     };
 
+    public bool RetainerSortEnabled { get; set; } = false;
+    public List<string> RetainerSortCommands { get; set; } = new();
+
     IReadOnlyList<string> ISortConfiguration.SortCommands => SortCommands;
 
     public void Save(IDalamudPluginInterface pi) => pi.SavePluginConfig(this);
