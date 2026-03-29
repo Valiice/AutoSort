@@ -1,6 +1,6 @@
 namespace AutoSort;
 
-public class InventorySortController
+public sealed class InventorySortController
 {
     private readonly IGameState _gameState;
     private readonly IMacroExecutor _macroExecutor;

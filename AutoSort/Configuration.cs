@@ -6,7 +6,7 @@ using Dalamud.Plugin;
 namespace AutoSort;
 
 [Serializable]
-public class Configuration : IPluginConfiguration, ISortConfiguration
+public sealed class Configuration : IPluginConfiguration, ISortConfiguration
 {
     public int Version { get; set; } = 0;
 
