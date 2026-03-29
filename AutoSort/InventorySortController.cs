@@ -22,5 +22,16 @@ public sealed class InventorySortController
         _config = config;
     }
 
-    public void Tick(long nowMs) { }
+    public void Tick(long nowMs)
+    {
+        var isOpen = _gameState.IsInventoryOpen();
+
+        if (isOpen && !_wasOpen && nowMs - _lastSortTime > _config.SortCooldownMs)
+        {
+            _lastSortTime = nowMs;
+            _scheduler.Schedule(() => _macroExecutor.Execute(_config.SortCommands), _config.ExecutionDelayMs);
+        }
+
+        _wasOpen = isOpen;
+    }
 }
