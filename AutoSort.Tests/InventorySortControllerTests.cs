@@ -77,4 +77,13 @@ public class InventorySortControllerTests
         var executedCommands = Assert.Single(_executor.Calls);
         Assert.Equal(new[] { "/foo", "/bar" }, executedCommands);
     }
+
+    [Fact]
+    public void DoesNotSort_WhenCommandsEmpty()
+    {
+        _config.SortCommands = new string[0];
+        var ctrl = MakeController();
+        ctrl.OnOpen(0);
+        Assert.Empty(_executor.Calls);
+    }
 }

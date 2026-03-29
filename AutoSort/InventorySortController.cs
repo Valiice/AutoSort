@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace AutoSort;
 
 public sealed class InventorySortController
@@ -24,6 +26,7 @@ public sealed class InventorySortController
     public void OnOpen(long nowMs)
     {
         if (!_config.Enabled) return;
+        if (!_config.SortCommands.Any()) return;
         if (!_gameState.IsLoggedIn) return;
         if (_gameState.IsAddonVisible("RetainerItemTransferProgress")) return;
         if (nowMs - _lastSortTime <= _config.SortCooldownMs) return;
