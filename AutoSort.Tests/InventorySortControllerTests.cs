@@ -14,25 +14,10 @@ public class InventorySortControllerTests
         new(_state, _executor, _scheduler, _config);
 
     [Fact]
-    public void Sorts_WhenInventoryJustOpened()
+    public void Sorts_WhenOpened()
     {
         var ctrl = MakeController();
-        _state.InventoryOpen = false;
-        ctrl.Tick(0);
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);
-        Assert.Single(_executor.Calls);
-    }
-
-    [Fact]
-    public void DoesNotSort_WhenAlreadyOpen()
-    {
-        var ctrl = MakeController();
-        _state.InventoryOpen = false;
-        ctrl.Tick(0);
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);  // transition — sorts once
-        ctrl.Tick(2);  // still open — must not sort again
+        ctrl.OnOpen(0);
         Assert.Single(_executor.Calls);
     }
 
@@ -41,10 +26,8 @@ public class InventorySortControllerTests
     {
         _config.SortCooldownMs = 2000;
         var ctrl = MakeController();
-        _state.InventoryOpen = false; ctrl.Tick(0);
-        _state.InventoryOpen = true;  ctrl.Tick(1);    // first open — sorts (1 - long.MinValue/2 >> 2000)
-        _state.InventoryOpen = false; ctrl.Tick(2);
-        _state.InventoryOpen = true;  ctrl.Tick(500);  // re-open — 500 - 1 = 499, not > 2000
+        ctrl.OnOpen(1);    // first open — sorts
+        ctrl.OnOpen(500);  // re-open — 500-1=499, which is <= 2000 — blocked
         Assert.Single(_executor.Calls);
     }
 
@@ -53,10 +36,8 @@ public class InventorySortControllerTests
     {
         _config.SortCooldownMs = 2000;
         var ctrl = MakeController();
-        _state.InventoryOpen = false; ctrl.Tick(0);
-        _state.InventoryOpen = true;  ctrl.Tick(1);     // first sort at t=1
-        _state.InventoryOpen = false; ctrl.Tick(2);
-        _state.InventoryOpen = true;  ctrl.Tick(3000);  // 3000 - 1 = 2999 > 2000 — sorts again
+        ctrl.OnOpen(1);     // first sort recorded at t=1
+        ctrl.OnOpen(3000);  // 3000-1=2999, which is > 2000 — sorts again
         Assert.Equal(2, _executor.Calls.Count);
     }
 
@@ -64,11 +45,8 @@ public class InventorySortControllerTests
     public void DoesNotSort_WhenNotLoggedIn()
     {
         _state.IsLoggedIn = false;
-        _state.InventoryOpen = false;
         var ctrl = MakeController();
-        ctrl.Tick(0);
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);
+        ctrl.OnOpen(0);
         Assert.Empty(_executor.Calls);
     }
 
@@ -76,23 +54,17 @@ public class InventorySortControllerTests
     public void DoesNotSort_WhenDisabled()
     {
         _config.Enabled = false;
-        _state.InventoryOpen = false;
         var ctrl = MakeController();
-        ctrl.Tick(0);
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);
+        ctrl.OnOpen(0);
         Assert.Empty(_executor.Calls);
     }
 
     [Fact]
     public void DoesNotSort_DuringRetainerTransfer()
     {
-        _state.InventoryOpen = false;
-        var ctrl = MakeController();
-        ctrl.Tick(0);
         _state.VisibleAddons.Add("RetainerItemTransferProgress");
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);
+        var ctrl = MakeController();
+        ctrl.OnOpen(0);
         Assert.Empty(_executor.Calls);
     }
 
@@ -101,10 +73,7 @@ public class InventorySortControllerTests
     {
         _config.SortCommands = new[] { "/foo", "/bar" };
         var ctrl = MakeController();
-        _state.InventoryOpen = false;
-        ctrl.Tick(0);
-        _state.InventoryOpen = true;
-        ctrl.Tick(1);
+        ctrl.OnOpen(0);
         var executedCommands = Assert.Single(_executor.Calls);
         Assert.Equal(new[] { "/foo", "/bar" }, executedCommands);
     }

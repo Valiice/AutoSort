@@ -7,7 +7,6 @@ public sealed class InventorySortController
     private readonly IActionScheduler _scheduler;
     private readonly ISortConfiguration _config;
 
-    private bool _wasOpen;
     private long _lastSortTime = long.MinValue / 2;
 
     public InventorySortController(
@@ -22,20 +21,14 @@ public sealed class InventorySortController
         _config = config;
     }
 
-    public void Tick(long nowMs)
+    public void OnOpen(long nowMs)
     {
         if (!_config.Enabled) return;
         if (!_gameState.IsLoggedIn) return;
         if (_gameState.IsAddonVisible("RetainerItemTransferProgress")) return;
+        if (nowMs - _lastSortTime <= _config.SortCooldownMs) return;
 
-        var isOpen = _gameState.IsInventoryOpen();
-
-        if (isOpen && !_wasOpen && nowMs - _lastSortTime > _config.SortCooldownMs)
-        {
-            _lastSortTime = nowMs;
-            _scheduler.Schedule(() => _macroExecutor.Execute(_config.SortCommands), _config.ExecutionDelayMs);
-        }
-
-        _wasOpen = isOpen;
+        _lastSortTime = nowMs;
+        _scheduler.Schedule(() => _macroExecutor.Execute(_config.SortCommands), _config.ExecutionDelayMs);
     }
 }

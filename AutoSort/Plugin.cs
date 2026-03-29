@@ -22,7 +22,7 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnUpdate(object _) =>
-        _controller.Tick(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        _controller.OnOpen(DateTimeOffset.Now.ToUnixTimeMilliseconds());
 
     public void Dispose()
     {
