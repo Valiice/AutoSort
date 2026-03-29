@@ -95,4 +95,17 @@ public class InventorySortControllerTests
         ctrl.Tick(1);
         Assert.Empty(_executor.Calls);
     }
+
+    [Fact]
+    public void SortsWithConfiguredCommands()
+    {
+        _config.SortCommands = new[] { "/foo", "/bar" };
+        var ctrl = MakeController();
+        _state.InventoryOpen = false;
+        ctrl.Tick(0);
+        _state.InventoryOpen = true;
+        ctrl.Tick(1);
+        var executedCommands = Assert.Single(_executor.Calls);
+        Assert.Equal(new[] { "/foo", "/bar" }, executedCommands);
+    }
 }
