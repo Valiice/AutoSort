@@ -21,6 +21,8 @@ public sealed class Plugin : IDalamudPlugin
         Svc.Framework.Update += OnUpdate;
     }
 
+    // TODO(Task 5): Replace with IAddonLifecycle event subscription — calling OnOpen every
+    // frame is semantically wrong but keeps compilation until Framework.Update is removed.
     private void OnUpdate(object _) =>
         _controller.OnOpen(DateTimeOffset.Now.ToUnixTimeMilliseconds());
 
