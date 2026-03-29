@@ -59,4 +59,40 @@ public class InventorySortControllerTests
         _state.InventoryOpen = true;  ctrl.Tick(3000);  // 3000 - 1 = 2999 > 2000 — sorts again
         Assert.Equal(2, _executor.Calls.Count);
     }
+
+    [Fact]
+    public void DoesNotSort_WhenNotLoggedIn()
+    {
+        _state.IsLoggedIn = false;
+        _state.InventoryOpen = false;
+        var ctrl = MakeController();
+        ctrl.Tick(0);
+        _state.InventoryOpen = true;
+        ctrl.Tick(1);
+        Assert.Empty(_executor.Calls);
+    }
+
+    [Fact]
+    public void DoesNotSort_WhenDisabled()
+    {
+        _config.Enabled = false;
+        _state.InventoryOpen = false;
+        var ctrl = MakeController();
+        ctrl.Tick(0);
+        _state.InventoryOpen = true;
+        ctrl.Tick(1);
+        Assert.Empty(_executor.Calls);
+    }
+
+    [Fact]
+    public void DoesNotSort_DuringRetainerTransfer()
+    {
+        _state.InventoryOpen = false;
+        var ctrl = MakeController();
+        ctrl.Tick(0);
+        _state.VisibleAddons.Add("RetainerItemTransferProgress");
+        _state.InventoryOpen = true;
+        ctrl.Tick(1);
+        Assert.Empty(_executor.Calls);
+    }
 }

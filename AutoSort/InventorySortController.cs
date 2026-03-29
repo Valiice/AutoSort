@@ -24,6 +24,10 @@ public sealed class InventorySortController
 
     public void Tick(long nowMs)
     {
+        if (!_config.Enabled) return;
+        if (!_gameState.IsLoggedIn) return;
+        if (_gameState.IsAddonVisible("RetainerItemTransferProgress")) return;
+
         var isOpen = _gameState.IsInventoryOpen();
 
         if (isOpen && !_wasOpen && nowMs - _lastSortTime > _config.SortCooldownMs)
