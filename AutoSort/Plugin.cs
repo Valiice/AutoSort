@@ -1,47 +1,60 @@
 using System;
 using System.Collections.Generic;
-using Dalamud.Game.Addon.Lifecycle;
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Plugin;
 using ECommons;
 using ECommons.DalamudServices;
+using ECommons.Logging;
 
 namespace AutoSort;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    private readonly GameState _gameState;
     private readonly InventorySortController _mainController;
     private readonly InventorySortController _retainerController;
+    private bool _wasMainOpen;
+    private bool _wasRetainerOpen;
 
     public Plugin(IDalamudPluginInterface pluginInterface)
     {
         ECommonsMain.Init(pluginInterface, this);
         var config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        var gameState = new GameState();
+        _gameState = new GameState();
         _mainController = new InventorySortController(
-            gameState, new MacroExecutor(), new TickSchedulerAdapter(), config);
+            _gameState, new MacroExecutor(), new TickSchedulerAdapter(), config);
         _retainerController = new InventorySortController(
-            gameState, new MacroExecutor(), new TickSchedulerAdapter(), new RetainerSortConfig(config));
+            _gameState, new MacroExecutor(), new TickSchedulerAdapter(), new RetainerSortConfig(config));
 
-        Svc.AddonLifecycle.RegisterListener(
-            AddonEvent.PostSetup,
-            ["Inventory", "InventoryLarge", "InventoryExpansion"],
-            OnMainInventoryOpen);
-        Svc.AddonLifecycle.RegisterListener(
-            AddonEvent.PostSetup,
-            ["InventoryRetainer", "InventoryRetainerLarge"],
-            OnRetainerInventoryOpen);
+        Svc.Framework.Update += OnUpdate;
     }
 
-    private void OnMainInventoryOpen(AddonEvent type, AddonArgs args) =>
-        _mainController.OnOpen(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+    private void OnUpdate(object _)
+    {
+        var nowMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-    private void OnRetainerInventoryOpen(AddonEvent type, AddonArgs args) =>
-        _retainerController.OnOpen(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        var mainOpen = _gameState.IsAddonVisible("Inventory")
+                    || _gameState.IsAddonVisible("InventoryLarge")
+                    || _gameState.IsAddonVisible("InventoryExpansion");
+        if (mainOpen && !_wasMainOpen)
+        {
+            PluginLog.Information("[AutoSort] Main inventory opened");
+            _mainController.OnOpen(nowMs);
+        }
+        _wasMainOpen = mainOpen;
+
+        var retainerOpen = _gameState.IsAddonVisible("InventoryRetainer")
+                        || _gameState.IsAddonVisible("InventoryRetainerLarge");
+        if (retainerOpen && !_wasRetainerOpen)
+        {
+            PluginLog.Information("[AutoSort] Retainer inventory opened");
+            _retainerController.OnOpen(nowMs);
+        }
+        _wasRetainerOpen = retainerOpen;
+    }
 
     public void Dispose()
     {
-        Svc.AddonLifecycle.UnregisterListener(OnMainInventoryOpen, OnRetainerInventoryOpen);
+        Svc.Framework.Update -= OnUpdate;
         ECommonsMain.Dispose();
     }
 
