@@ -23,8 +23,15 @@ public sealed class Configuration : IPluginConfiguration, ISortConfiguration
         "/itemsort execute inventory"
     };
 
-    public bool RetainerSortEnabled { get; set; } = false;
-    public List<string> RetainerSortCommands { get; set; } = new();
+    public bool RetainerSortEnabled { get; set; } = true;
+    public List<string> RetainerSortCommands { get; set; } = new()
+    {
+        "/itemsort condition retainer stack des",
+        "/itemsort condition retainer id asc",
+        "/itemsort condition retainer ilv des",
+        "/itemsort condition retainer category asc",
+        "/itemsort execute retainer"
+    };
 
     IReadOnlyList<string> ISortConfiguration.SortCommands => SortCommands;
 
