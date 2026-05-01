@@ -28,6 +28,16 @@ public sealed class Plugin : IDalamudPlugin
         Svc.Framework.Update += OnUpdate;
     }
 
+    // DEBUG: candidate retainer addon names to probe
+    private static readonly string[] RetainerAddonCandidates =
+    {
+        "InventoryRetainer", "InventoryRetainerLarge",
+        "RetainerGrid", "RetainerGrid0", "RetainerGrid1",
+        "RetainerList", "RetainerInventory", "RetainerSellList",
+        "RetainerSell", "RetainerTaskAsk", "RetainerTaskResult",
+    };
+    private bool _retainerProbed;
+
     private void OnUpdate(object _)
     {
         var nowMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -41,6 +51,19 @@ public sealed class Plugin : IDalamudPlugin
             _mainController.OnOpen(nowMs);
         }
         _wasMainOpen = mainOpen;
+
+        // DEBUG: log which retainer addons are visible (once per retainer visit)
+        if (_gameState.IsAddonVisible("RetainerList") && !_retainerProbed)
+        {
+            _retainerProbed = true;
+            foreach (var name in RetainerAddonCandidates)
+            {
+                if (_gameState.IsAddonVisible(name))
+                    PluginLog.Information($"[AutoSort] DEBUG retainer addon visible: {name}");
+            }
+        }
+        if (!_gameState.IsAddonVisible("RetainerList"))
+            _retainerProbed = false;
 
         var retainerOpen = _gameState.IsAddonVisible("InventoryRetainer")
                         || _gameState.IsAddonVisible("InventoryRetainerLarge");
