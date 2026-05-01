@@ -1,12 +1,13 @@
 {
   "Author": "Vali",
   "Name": "AutoSort",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
+  "InternalName": "AutoSort",
+  "Punchline": "Keeps your inventory tidy automatically.",
   "Description": "Automatically sorts the inventory when opened.",
   "ApplicableVersion": "any",
   "Tags": [
-    "sample",
-    "plugin",
-    "goats"
+    "inventory",
+    "sort",
+    "utility"
   ]
 }
